@@ -2,6 +2,8 @@ package com.jcaa.usersmanagement.infrastructure.entrypoint.rest.advice;
 
 import com.jcaa.usersmanagement.domain.exception.DomainException;
 import com.jcaa.usersmanagement.domain.exception.InvalidCredentialsException;
+import com.jcaa.usersmanagement.domain.exception.StudentAlreadyExistsException;
+import com.jcaa.usersmanagement.domain.exception.StudentNotFoundException;
 import com.jcaa.usersmanagement.domain.exception.UserAlreadyExistsException;
 import com.jcaa.usersmanagement.domain.exception.UserNotFoundException;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.exception.PersistenceException;
@@ -30,6 +32,21 @@ public class GlobalExceptionHandler {
     return new ApiErrorResponse(HttpStatus.CONFLICT.value(), exception.getMessage());
   }
 
+  //student
+
+  @ExceptionHandler(StudentNotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public ApiErrorResponse handleStudentNotFound(final StudentNotFoundException exception) {
+    return new ApiErrorResponse(HttpStatus.NOT_FOUND.value(), exception.getMessage());
+  }
+
+  @ExceptionHandler(StudentAlreadyExistsException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ApiErrorResponse handleStudentAlreadyExists(
+          final StudentAlreadyExistsException exception) {
+    return new ApiErrorResponse(HttpStatus.CONFLICT.value(), exception.getMessage());
+  }
+//------
   @ExceptionHandler(InvalidCredentialsException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
   public ApiErrorResponse handleInvalidCredentials(final InvalidCredentialsException exception) {
@@ -40,20 +57,20 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ApiErrorResponse handleConstraintViolation(final ConstraintViolationException exception) {
     final String message =
-        exception.getConstraintViolations().stream()
-            .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-            .collect(Collectors.joining(", "));
+            exception.getConstraintViolations().stream()
+                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
+                    .collect(Collectors.joining(", "));
     return new ApiErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ApiErrorResponse handleMethodArgumentNotValid(
-      final MethodArgumentNotValidException exception) {
+          final MethodArgumentNotValidException exception) {
     final String message =
-        exception.getBindingResult().getFieldErrors().stream()
-            .map(e -> e.getField() + ": " + e.getDefaultMessage())
-            .collect(Collectors.joining(", "));
+            exception.getBindingResult().getFieldErrors().stream()
+                    .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
     return new ApiErrorResponse(HttpStatus.BAD_REQUEST.value(), message);
   }
 
@@ -67,14 +84,14 @@ public class GlobalExceptionHandler {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ApiErrorResponse handlePersistence(final PersistenceException ignored) {
     return new ApiErrorResponse(
-        HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error de persistencia.");
+            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error de persistencia.");
   }
 
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ApiErrorResponse handleGeneral(final Exception ignored) {
     return new ApiErrorResponse(
-        HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error interno del servidor.");
+            HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error interno del servidor.");
   }
 }
 
